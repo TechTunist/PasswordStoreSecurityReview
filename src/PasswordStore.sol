@@ -10,11 +10,24 @@ pragma solidity 0.8.18;
 contract PasswordStore {
     error PasswordStore__NotOwner();
 
+
+    /////////// State Variables ///////// 
+    
     address private s_owner;
+
+    // @audit-high (WRITTEN UP): the s_password variable will be visible to anyone who can read the blockchain
     string private s_password;
+
+    ////////////////////////////////////
+
+
+    ////    Events    ////
 
     event SetNetPassword();
 
+    /////////////////////
+
+    
     constructor() {
         s_owner = msg.sender;
     }
@@ -23,16 +36,19 @@ contract PasswordStore {
      * @notice This function allows only the owner to set a new password.
      * @param newPassword The new password to set.
      */
-    function setPassword(string memory newPassword) external {
+
+    // @audit-high: any user can set a password missing access control
+    function setPassword(string memory newPassword) external { // there is no "onlyOwner" modifier or other ownership check for this function
         s_password = newPassword;
         emit SetNetPassword();
     }
 
     /*
      * @notice This allows only the owner to retrieve the password.
+     // @audit: documentation error: there is no parameter and this function is not for setting a new password
      * @param newPassword The new password to set.
      */
-    function getPassword() external view returns (string memory) {
+    function getPassword() external view returns (string memory) { // there is no "onlyOwner" modifier for this function either
         if (msg.sender != s_owner) {
             revert PasswordStore__NotOwner();
         }
